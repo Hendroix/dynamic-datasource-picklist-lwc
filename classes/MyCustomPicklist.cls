@@ -18,7 +18,7 @@ global with sharing class MyCustomPicklist extends VisualEditor.DynamicPickList 
         return dynamicPickList;
     }
 
-    private Boolean isValid(String attr) {
+    global Boolean isValid(String attr) {
         return true;
     }
 

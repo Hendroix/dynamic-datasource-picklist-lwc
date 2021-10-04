@@ -3,8 +3,8 @@
  */
 public with sharing class VisualEditorUtility {
 
+    @TestVisible
     private static final String DELIMITER = '&';
-    private static final Integer SOQL_QUERY_LIMIT = 15;
 
     private static Map<String, Map<String, SObjectField>> sObjectFieldMapBySObject {
         get {
@@ -15,10 +15,10 @@ public with sharing class VisualEditorUtility {
     }
 
     @AuraEnabled
-    public static DataTable getDatatable(String recordId, String relationship, String CSF, Integer offset) {
+    public static DataTable getDatatable(String recordId, String relationship, String CSF, Integer offset, Integer size) {
         if (relationship.containsNone(DELIMITER)) throw new AuraHandledException('NO DELIMITER WAS GIVEN, API NAME CONTEXT IS LOST!');
         offset = offset != null ? offset : 0;
-        return new DataTable(recordId, relationship.split(DELIMITER).get(0), relationship.split(DELIMITER).get(1), sanitizeFieldsString(CSF), offset);
+        return new DataTable(recordId, relationship.split(DELIMITER).get(0), relationship.split(DELIMITER).get(1), sanitizeFieldsString(CSF), offset, size);
     }
 
     private static List<String> sanitizeFieldsString(String csf) {
@@ -55,6 +55,7 @@ public with sharing class VisualEditorUtility {
         return labelMap;
     }
 
+    @TestVisible
     private with sharing class DataTable {
         @AuraEnabled
         public List<Column> columns {
@@ -74,11 +75,11 @@ public with sharing class VisualEditorUtility {
         public String query;
         private Boolean isFirst;
 
-        public DataTable(String parentRecordId, String childObjectApiName, String parentRelationField, List<String> fields, Integer offset) {
+        public DataTable(String parentRecordId, String childObjectApiName, String parentRelationField, List<String> fields, Integer offset, Integer size) {
             this.isFirst = offset == 0 || offset == null;
 
             setColumns(childObjectApiName, fields);
-            setData(parentRecordId, childObjectApiName, parentRelationField, fields, offset);
+            setData(parentRecordId, childObjectApiName, parentRelationField, fields, offset, size);
             setMaxRows(childObjectApiName, parentRelationField, parentRecordId);
         }
 
@@ -122,10 +123,10 @@ public with sharing class VisualEditorUtility {
             }
         }
 
-        private void setData(String parentRecordId, String childObjectApiName, String parentRelationField, List<String> fields, Integer offset) {
-            this.query = 'SELECT Id, ' + String.join(fields, ', ') + ' FROM ' + childObjectApiName + ' WHERE ' + parentRelationField + ' = \'' + parentRecordId + '\' ORDER BY LastModifiedDate DESC LIMIT ' + SOQL_QUERY_LIMIT + ' OFFSET ' + offset;
+        private void setData(String parentRecordId, String childObjectApiName, String parentRelationField, List<String> fields, Integer offset, Integer size) {
+            this.query = 'SELECT Id, ' + String.join(fields, ', ') + ' FROM ' + childObjectApiName + ' WHERE ' + parentRelationField + ' = \'' + parentRecordId + '\' ORDER BY LastModifiedDate DESC LIMIT ' + size + ' OFFSET ' + offset;
             this.data = Database.query(this.query);
-            this.maxRows = this.data.size() == SOQL_QUERY_LIMIT ? null : this.data.size();
+            this.maxRows = this.data.size() == size ? null : this.data.size();
         }
 
     }
