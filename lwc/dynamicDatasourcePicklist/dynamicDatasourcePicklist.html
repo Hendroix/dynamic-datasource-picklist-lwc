@@ -1,0 +1,42 @@
+<!--
+ - Created by henri on 03.10.2021.
+ -->
+
+<!-- Dynamic Datasource Picklist -->
+<template>
+    <lightning-card title="Child Relationship Datatable Component">
+        <div slot="actions">
+            <lightning-button-icon icon-name="utility:refresh" onclick={connectedCallback}></lightning-button-icon>
+        </div>
+
+        <div class="slds-p-horizontal_medium">
+            <div>
+                <p>RecordId: {recordId}</p>
+                <p>Relationship: {relationship}</p>
+                <p>Fields: {fields}</p>
+                <p>Query: {query}</p>
+            </div>
+
+            <template if:true={hasData}>
+                <div style={datatableHeightRestriction}>
+                    <lightning-datatable
+                            key-field="Id"
+                            columns={columns}
+                            data={data}
+                            hide-checkbox-column
+                            show-row-number-column
+                            enable-infinite-loading
+                            onloadmore={handleLoadMore}
+                    ></lightning-datatable>
+                </div>
+                <h2 class="slds-text-align_right"><b>{showingOfTitle}</b></h2>
+            </template>
+
+            <div if:true={error}>
+                <h2 class="slds-has-error">{error}</h2>
+            </div>
+        </div>
+
+        <lightning-spinner if:true={isLoading} variant="brand" size="small"></lightning-spinner>
+    </lightning-card>
+</template>
